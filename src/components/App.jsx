@@ -12,15 +12,14 @@ import Modal from './Modal/Modal';
 import css from './app.module.css';
 
 const pixabayApi = new PixabayApi();
-console.log(pixabayApi);
 export const App = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [loadedData, setLoadedData] = useState([]);
   const [isLoader, setIsLoader] = useState(false);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [isLoadMoreBtn, setIsLoadMoreBtn] = useState(false);
-  const [imgsPerPage, setImgsPerPage] = useState(0);
-  const [currentImgUrl, setCurrentImgUrl] = useState(2);
+  const [imgsPerPage, setImgsPerPage] = useState(4);
+  const [currentImgUrl, setCurrentImgUrl] = useState('');
 
   const onSearchInputChange = event => {
     let {
@@ -41,7 +40,7 @@ export const App = () => {
     //* скидую лічильник
     pixabayApi.page = 1;
     //* встановлюю кількість картинок у запиті
-    pixabayApi.per_page = imgsPerPage
+    pixabayApi.per_page = imgsPerPage;
     // * Якщо відправляться пусте поле запит не відбудеться
     if (searchQuery.trim() === '') {
       Notiflix.Notify.info('Please type your query');
@@ -101,12 +100,21 @@ export const App = () => {
       setIsLoader(true);
       setIsLoadMoreBtn(true);
 
-      if (pixabayApi.page < data.totalHits / pixabayApi.per_page + 1) {
+      // if (loadedData.length === data.totalHits) {
+      //   setIsLoadMoreBtn(false);
+      //   Notiflix.Notify.info(
+      //     "!!!!!!!!!!!!We're sorry, but you've reached the end of search results."
+      //   );
+      //   return;
+      // }
+      console.log(pixabayApi.page, data.totalHits / pixabayApi.per_page + 1);
+      if (pixabayApi.page < data.totalHits / pixabayApi.per_page - 1) {
         Notiflix.Notify.success(`Loaded next ${pixabayApi.per_page} images `);
         return;
       }
-      if (pixabayApi.page >= data.totalHits / pixabayApi.per_page + 1) {
+      if (pixabayApi.page >= data.totalHits / pixabayApi.per_page - 1) {
         setIsLoadMoreBtn(false);
+        Notiflix.Notify.success(`Loaded next ${pixabayApi.per_page} images `);
         Notiflix.Notify.info(
           "We're sorry, but you've reached the end of search results."
         );
