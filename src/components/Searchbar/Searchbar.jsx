@@ -1,8 +1,13 @@
+// import { AppProvider, useApp } from 'contexts/AppContext';
 import PropTypes from 'prop-types';
 
 import css from './serchbar.module.css';
 
-const Searchbar = ({ onSearchFormSubmit, onSearchInputChange }) => {
+const Searchbar = ({
+  onSearchFormSubmit,
+  onSearchInputChange,
+  onImgsPerPageInputChange,
+}) => {
   return (
     <header className={css.Searchbar}>
       <form className={css.SearchForm} onSubmit={onSearchFormSubmit}>
@@ -18,6 +23,18 @@ const Searchbar = ({ onSearchFormSubmit, onSearchInputChange }) => {
           placeholder="Search images and photos"
           // required
           onChange={onSearchInputChange}
+        />
+        <input
+          className={css.PerPageInput}
+          type="number"
+          autoComplete="off"
+          min='4'
+          max='24'
+          step='2'
+          // autoFocus
+          placeholder="Per page"
+          // required
+          onChange={onImgsPerPageInputChange}
         />
       </form>
     </header>

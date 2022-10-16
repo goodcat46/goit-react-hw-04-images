@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import Notiflix from 'notiflix';
-
+// import { useApp } from 'contexts/AppContext';
 import { PixabayApi } from '../api/fetchAPI';
 
 import Searchbar from './Searchbar/Searchbar';
@@ -12,45 +12,51 @@ import Modal from './Modal/Modal';
 import css from './app.module.css';
 
 const pixabayApi = new PixabayApi();
+console.log(pixabayApi);
+export const App = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loadedData, setLoadedData] = useState([]);
+  const [isLoader, setIsLoader] = useState(false);
+  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [isLoadMoreBtn, setIsLoadMoreBtn] = useState(false);
+  const [imgsPerPage, setImgsPerPage] = useState(0);
+  const [currentImgUrl, setCurrentImgUrl] = useState(2);
 
-export class App extends Component {
-  state = {
-    isLoader: false,
-    isOpenModal: false,
-    isLoadMoreBtn: false,
-    searchQuery: '',
-    loadedData: [],
-    totalHits: null,
-    currentImgUrl: '',
+  const onSearchInputChange = event => {
+    let {
+      target: { value },
+    } = event;
+    setSearchQuery(value.trim());
   };
-  onSearchInputChange = event => {
-    let { target } = event;
-    this.setState({ searchQuery: target.value.trim() });
+  const onImgsPerPageInputChange = event => {
+    let {
+      target: { value },
+    } = event;
+    setImgsPerPage(value.trim());
   };
-  onSearchFormSubmit = async event => {
+  const onSearchFormSubmit = async event => {
     event.preventDefault();
     //* зчитую інпут
-    pixabayApi.searchQuery = this.state.searchQuery.trim();
+    pixabayApi.searchQuery = searchQuery.trim();
     //* скидую лічильник
     pixabayApi.page = 1;
-
+    //* встановлюю кількість картинок у запиті
+    pixabayApi.per_page = imgsPerPage
     // * Якщо відправляться пусте поле запит не відбудеться
-    if (this.state.searchQuery.trim() === '') {
+    if (searchQuery.trim() === '') {
       Notiflix.Notify.info('Please type your query');
       return;
     }
     // *Варіант через async/await
     try {
       const { data } = await pixabayApi.fetchPhotosByQuery();
-      this.setState({
-        isLoader: true,
-        isLoadMoreBtn: true,
-        loadedData: data.hits,
-      });
+      setLoadedData(data.hits);
+      setIsLoader(true);
+      setIsLoadMoreBtn(true);
       console.log(data);
 
       if (data.totalHits === 0) {
-        this.setState({ isLoadMoreBtn: false });
+        setIsLoadMoreBtn(false);
         Notiflix.Notify.failure(
           'Sorry, there are no images matching your search query. Please try again.'
         );
@@ -58,7 +64,7 @@ export class App extends Component {
       }
       if (pixabayApi.page >= data.totalHits / pixabayApi.per_page + 1) {
         //* ховаю кнопку
-        this.setState({ isLoadMoreBtn: false });
+        setIsLoadMoreBtn(false);
         //* виводжу повідомлення про кінець запитів
         Notiflix.Notify.info(
           "We're sorry, but you've reached the end of search results."
@@ -68,7 +74,7 @@ export class App extends Component {
       }
       if (pixabayApi.page >= data.totalHits / pixabayApi.per_page) {
         // *Якщо ТІЛЬКИ одна сторінка то тільки відмальовуємо
-        this.setState({ isLoadMoreBtn: false });
+        setIsLoadMoreBtn(false);
         Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
         return;
       }
@@ -77,10 +83,10 @@ export class App extends Component {
       //* помилка піде у лог
       console.log(err);
     } finally {
-      this.setState({ isLoader: false });
+      setIsLoader(false);
     }
   };
-  onLoadMoreBtnClick = async event => {
+  const onLoadMoreBtnClick = async event => {
     //* Варіант через async/await
     try {
       pixabayApi.page += 1;
@@ -90,14 +96,17 @@ export class App extends Component {
       console.log(data);
 
       //* показую лоадер
-      this.setState(prevState => ({
-        isLoader: true,
-        isLoadMoreBtn: true,
-        loadedData: [...prevState.loadedData, ...data.hits],
-      }));
 
+      setLoadedData(prev => [...prev, ...data.hits]);
+      setIsLoader(true);
+      setIsLoadMoreBtn(true);
+
+      if (pixabayApi.page < data.totalHits / pixabayApi.per_page + 1) {
+        Notiflix.Notify.success(`Loaded next ${pixabayApi.per_page} images `);
+        return;
+      }
       if (pixabayApi.page >= data.totalHits / pixabayApi.per_page + 1) {
-        this.setState({ isLoadMoreBtn: false });
+        setIsLoadMoreBtn(false);
         Notiflix.Notify.info(
           "We're sorry, but you've reached the end of search results."
         );
@@ -105,55 +114,51 @@ export class App extends Component {
     } catch (err) {
       console.log(err);
     } finally {
-      this.setState({ isLoader: false });
+      setIsLoader(false);
     }
   };
-  handleToggleModal = el => {
-    let { isOpenModal } = this.state;
-    this.setState({ isOpenModal: !isOpenModal, currentImgUrl: el });
+  const handleToggleModal = el => {
+    setIsOpenModal(!isOpenModal);
+    setCurrentImgUrl(el);
   };
-  handleToggleModalOverlay = evt => {
+  const handleToggleModalOverlay = evt => {
     let { target, currentTarget } = evt;
     if (target === currentTarget) {
-      this.handleToggleModal();
+      handleToggleModal();
     }
   };
-  handleToggleModalByEsc = evt => {
+  const handleToggleModalByEsc = evt => {
     let { code } = evt;
     if (code === 'Escape') {
-      this.handleToggleModal();
-      window.removeEventListener('keydown', this.handleToggleModalByEsc);
+      handleToggleModal();
+      window.removeEventListener('keydown', handleToggleModalByEsc);
     }
   };
-  render() {
-    const { currentImgUrl, loadedData, isLoader, isLoadMoreBtn, isOpenModal } =
-      this.state;
-    return (
-      <div className={css.App}>
-        <Searchbar
-          onSearchFormSubmit={this.onSearchFormSubmit}
-          onSearchInputChange={this.onSearchInputChange}
+  return (
+    <div className={css.App}>
+      <Searchbar
+        onSearchFormSubmit={onSearchFormSubmit}
+        onSearchInputChange={onSearchInputChange}
+        onImgsPerPageInputChange={onImgsPerPageInputChange}
+      />
+
+      {loadedData.length !== 0 && (
+        <ImageGallery
+          loadedData={loadedData}
+          onToggleModal={handleToggleModal}
         />
-        {loadedData.length !== 0 && (
-          <ImageGallery
-            loadedData={loadedData}
-            onToggleModal={this.handleToggleModal}
-          />
-        )}
-        {isLoader && <Loader />}
-        {isLoadMoreBtn && (
-          <Button onLoadMoreBtnClick={this.onLoadMoreBtnClick} />
-        )}
-        {isOpenModal && (
-          <Modal
-            currentImgUrl={currentImgUrl}
-            onToggleModalByBtn={this.handleToggleModal}
-            onToggleModalByOverlay={this.handleToggleModalOverlay}
-            onCloseModalByEsc={this.handleToggleModalByEsc}
-          />
-        )}
-      </div>
-    );
-  }
-}
+      )}
+      {isLoader && <Loader />}
+      {isLoadMoreBtn && <Button onLoadMoreBtnClick={onLoadMoreBtnClick} />}
+      {isOpenModal && (
+        <Modal
+          currentImgUrl={currentImgUrl}
+          onToggleModalByBtn={handleToggleModal}
+          onToggleModalByOverlay={handleToggleModalOverlay}
+          onCloseModalByEsc={handleToggleModalByEsc}
+        />
+      )}
+    </div>
+  );
+};
 // * <Searchbar/>, <ImageGallery/>, <ImageGalleryItem/>, <Loader/>, <Button/> і <Modal/>
