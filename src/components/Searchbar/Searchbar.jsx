@@ -1,4 +1,3 @@
-// import { AppProvider, useApp } from 'contexts/AppContext';
 import PropTypes from 'prop-types';
 
 import css from './serchbar.module.css';
@@ -21,19 +20,16 @@ const Searchbar = ({
           autoComplete="off"
           autoFocus
           placeholder="Search images and photos"
-          // required
           onChange={onSearchInputChange}
         />
         <input
           className={css.PerPageInput}
           type="number"
           autoComplete="off"
-          min='4'
-          max='24'
-          step='2'
-          // autoFocus
+          min="4"
+          max="24"
+          step="2"
           placeholder="Per page"
-          // required
           onChange={onImgsPerPageInputChange}
         />
       </form>

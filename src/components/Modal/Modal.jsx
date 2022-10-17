@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import css from './modal.module.css';
-// import { useApp } from 'contexts/AppContext';
 
 const Modal = ({
   currentImgUrl,

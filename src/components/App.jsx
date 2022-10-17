@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import Notiflix from 'notiflix';
-// import { useApp } from 'contexts/AppContext';
 import { PixabayApi } from '../api/fetchAPI';
 
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Loader from './Loader/Loader';
 import Button from './Button/Button';
-
 
 import css from './app.module.css';
 
@@ -50,7 +48,6 @@ export const App = () => {
       setLoadedData(data.hits);
       setIsLoader(true);
       setIsLoadMoreBtn(true);
-      console.log(data);
 
       if (data.totalHits === 0) {
         setIsLoadMoreBtn(false);
@@ -97,15 +94,7 @@ export const App = () => {
       setLoadedData(prev => [...prev, ...data.hits]);
       setIsLoader(true);
       setIsLoadMoreBtn(true);
-
-      // if (loadedData.length === data.totalHits) {
-      //   setIsLoadMoreBtn(false);
-      //   Notiflix.Notify.info(
-      //     "!!!!!!!!!!!!We're sorry, but you've reached the end of search results."
-      //   );
-      //   return;
-      // }
-      console.log(pixabayApi.page, data.totalHits / pixabayApi.per_page + 1);
+      
       if (pixabayApi.page < data.totalHits / pixabayApi.per_page - 1) {
         Notiflix.Notify.success(`Loaded next ${pixabayApi.per_page} images `);
         return;
@@ -137,4 +126,3 @@ export const App = () => {
     </div>
   );
 };
-// * <Searchbar/>, <ImageGallery/>, <ImageGalleryItem/>, <Loader/>, <Button/> і <Modal/>
