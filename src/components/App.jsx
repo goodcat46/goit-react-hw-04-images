@@ -7,7 +7,7 @@ import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Loader from './Loader/Loader';
 import Button from './Button/Button';
-import Modal from './Modal/Modal';
+
 
 import css from './app.module.css';
 
@@ -16,10 +16,8 @@ export const App = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [loadedData, setLoadedData] = useState([]);
   const [isLoader, setIsLoader] = useState(false);
-  const [isOpenModal, setIsOpenModal] = useState(false);
   const [isLoadMoreBtn, setIsLoadMoreBtn] = useState(false);
   const [imgsPerPage, setImgsPerPage] = useState(4);
-  const [currentImgUrl, setCurrentImgUrl] = useState('');
 
   const onSearchInputChange = event => {
     let {
@@ -125,23 +123,6 @@ export const App = () => {
       setIsLoader(false);
     }
   };
-  const handleToggleModal = el => {
-    setIsOpenModal(!isOpenModal);
-    setCurrentImgUrl(el);
-  };
-  const handleToggleModalOverlay = evt => {
-    let { target, currentTarget } = evt;
-    if (target === currentTarget) {
-      handleToggleModal();
-    }
-  };
-  const handleToggleModalByEsc = evt => {
-    let { code } = evt;
-    if (code === 'Escape') {
-      handleToggleModal();
-      window.removeEventListener('keydown', handleToggleModalByEsc);
-    }
-  };
   return (
     <div className={css.App}>
       <Searchbar
@@ -150,22 +131,9 @@ export const App = () => {
         onImgsPerPageInputChange={onImgsPerPageInputChange}
       />
 
-      {loadedData.length !== 0 && (
-        <ImageGallery
-          loadedData={loadedData}
-          onToggleModal={handleToggleModal}
-        />
-      )}
+      {loadedData.length !== 0 && <ImageGallery loadedData={loadedData} />}
       {isLoader && <Loader />}
       {isLoadMoreBtn && <Button onLoadMoreBtnClick={onLoadMoreBtnClick} />}
-      {isOpenModal && (
-        <Modal
-          currentImgUrl={currentImgUrl}
-          onToggleModalByBtn={handleToggleModal}
-          onToggleModalByOverlay={handleToggleModalOverlay}
-          onCloseModalByEsc={handleToggleModalByEsc}
-        />
-      )}
     </div>
   );
 };

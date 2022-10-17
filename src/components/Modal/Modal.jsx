@@ -3,12 +3,20 @@ import PropTypes from 'prop-types';
 import css from './modal.module.css';
 // import { useApp } from 'contexts/AppContext';
 
-const Modal = ({ currentImgUrl, onToggleModalByBtn, onToggleModalByOverlay, onCloseModalByEsc }) => {
-  window.addEventListener('keydown',onCloseModalByEsc)
+const Modal = ({
+  currentImgUrl,
+  onToggleModalByBtn,
+  onToggleModalByOverlay,
+  onCloseModalByEsc,
+}) => {
+  window.addEventListener('keydown', onCloseModalByEsc);
   return (
-    <div className={css.Overlay} onClick={(evt)=>{
-      onToggleModalByOverlay(evt)
-    }}>
+    <div
+      className={css.Overlay}
+      onClick={evt => {
+        onToggleModalByOverlay(evt);
+      }}
+    >
       <div className={css.Modal}>
         <img src={currentImgUrl} alt="img_" />
       </div>
@@ -28,6 +36,7 @@ Modal.propTypes = {
   currentImgUrl: PropTypes.string,
   onToggleModalByBtn: PropTypes.func,
   onToggleModalByOverlay: PropTypes.func,
+  onCloseModalByEsc: PropTypes.func,
 };
 
 export default Modal;
